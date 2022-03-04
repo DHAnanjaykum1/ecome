@@ -1,2 +1,29 @@
 {% extends 'base.html' %}
 
+
+
+{% block content %}
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="row">
+                   {% for item in object_list %}
+                   <div class="col-3">
+                        <div class="card shadow">
+                            <img src="{{item.image.url}}" alt="" class="card-img-top">
+                            <div class="card-body">
+                                <h6>{{ item.get_category_display }}</h6>
+                                <h6>
+                                    <a href="{{item.get_absolute_url }}" class="text-truncate text-capitalize">{{item.title}}</a>
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
+                   {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
