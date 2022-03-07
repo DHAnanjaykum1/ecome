@@ -55,6 +55,7 @@ class Item(models.Model):
     def get_absolute_url(self):
         return reverse("core:item", kwargs={"slug": self.slug})
         
+        
 #######################################################################
 class Variation(models.Model):
     item = models.ForeignKey(Item,on_delete=models.CASCADE)
