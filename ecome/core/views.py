@@ -4,6 +4,7 @@ from re import template
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView,DetailView,View
 from .models import Item, ItemVariation,OrderItem,Order, Variation
 from django.utils import timezone
@@ -24,7 +25,7 @@ class ItemDetailsView(DetailView):
         return context
 
 
-class AddToCart(View):
+class AddToCart(LoginRequiredMixin,View):
     def get(self,request,slug,*args, **kwargs):
         item = get_object_or_404(Item,slug=slug)
 
@@ -45,18 +46,17 @@ class AddToCart(View):
         
         if order_qs.exists():
             order = order_qs[0]
-            if order.items.filter(user=request.user,ordered=False):
+            if order.items.filter(item__slug=item.slug).exists():
                 order_item.qty += 1
                 order_item.save()
                 return redirect("core:order-summary")
             else:
                 # not working
                 order.items.add(order_item)
-
                 for v in var:
                     a = ItemVariation.objects.get(value=v, variation__item__slug=item.slug)
                     order_item.item_variations.add(a)
-                    return redirect("core:order-summary")
+                return redirect("core:order-summary")
 
         else:
             ordered_date = timezone.now()
