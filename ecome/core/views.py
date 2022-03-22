@@ -51,7 +51,6 @@ class AddToCart(LoginRequiredMixin,View):
                 order_item.save()
                 return redirect("core:order-summary")
             else:
-                # not working
                 order.items.add(order_item)
                 for v in var:
                     a = ItemVariation.objects.get(value=v, variation__item__slug=item.slug)

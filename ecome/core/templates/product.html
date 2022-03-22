@@ -49,9 +49,8 @@
                             <div class="card-body">
                                 <h6>{{ item.get_category_display }}</h6>
                                 <h6>
-                                    <form action="" class="text-truncate text-decoration-none text-dark text-capitalize">{{item.title}}
-
-                                    </form>
+                                    <a href="{{ item.get_absolute_url }}" class="text-truncate text-decoration-none text-dark text-capitalize">{{item.title}}</a>
+                            
                                 </h6>
                             </div>
                         </div>
