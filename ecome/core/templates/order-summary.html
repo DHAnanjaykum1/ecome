@@ -29,13 +29,13 @@
                         </span>
 
                         <span class="d-block my-2">
-                            <a href="" class=" btn btn-danger fw-bolder">-</a>
+                            <a href="{% url 'core:minus-from-cart' order_item.item.slug %}" class=" btn btn-danger fw-bolder">-</a>
                             <span class="">{{order_item.qty}}</span>
                             <a href="{% url 'core:add-to-cart' order_item.item.slug %}" class=" btn btn-success fw-bolder">+</a>
                         </span>
 
                         <div class="d-inline-block">
-                            <a href="" class="btn btn-secondary float-end">Remove</a>
+                            <a href="{% url 'core:remove-from-cart' order_item.item.slug %}" class="btn btn-secondary float-end">Remove</a>
                         </div>
                         </div>
                         

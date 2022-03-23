@@ -24,7 +24,21 @@ class ItemDetailsView(DetailView):
         context['items'] = Item.objects.exclude(slug=self.kwargs['slug'])
         return context
 
+class RemoveFromCart(LoginRequiredMixin,View):
+    def get(self,request,slug,*args, **kwargs):
+        item = get_object_or_404(Item,slug=slug)
 
+        order_qs = Order.objects.filter(user=request.user,ordered=False)
+        
+        if order_qs.exists():
+            order = order_qs[0]
+            if order.items.filter(item__slug=item.slug).exists():
+                order_item = OrderItem.objects.filter(item=item,user=request.user,ordered=False)[0]
+                order.items.remove(order_item)
+                order_item.delete()
+            
+            return redirect("core:order-summary")
+            
 class AddToCart(LoginRequiredMixin,View):
     def get(self,request,slug,*args, **kwargs):
         item = get_object_or_404(Item,slug=slug)
@@ -64,11 +78,49 @@ class AddToCart(LoginRequiredMixin,View):
             return redirect("core:order-summary")
 
 
+            
+class MinusItemCart(LoginRequiredMixin,View):
+    def get(self,request,slug,*args, **kwargs):
+        item = get_object_or_404(Item,slug=slug)
 
-class OrderSummaryVIew(View):
+        order_item, created = OrderItem.objects.get_or_create(
+            item=item,
+            user=request.user,
+            ordered=False
+        )
+        # for varient
+        var = []
+
+        varient = Variation.objects.filter(item=item)
+
+        for v in varient:
+            var.append(request.GET.get(v.name, None))
+
+        order_qs = Order.objects.filter(user=request.user,ordered=False)
+        
+        if order_qs.exists():
+            order = order_qs[0]
+            if order.items.filter(item__slug=item.slug).exists():
+                if order_item.qty > 1:
+                    order_item.qty -= 1
+                    order_item.save()
+                else: 
+                    order.items.remove(order_item)
+
+                return redirect("core:order-summary")
+
+        else:
+         
+            return redirect("core:order-summary")
+
+
+
+class OrderSummaryVIew(LoginRequiredMixin,View):
     def get(self, *args, **kwargs):
         try: 
             order = Order.objects.get(user=self.request.user,ordered=False)
+            if order.items.count() < 1:
+                return redirect("core:homepage")
             context = {"object":order}
         except ObjectDoesNotExist:
             return redirect("core:homepage")
