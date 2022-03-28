@@ -1,17 +1,18 @@
-from ast import arg
-from importlib.resources import contents
-from re import template
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView,DetailView,View
-from .models import Item, ItemVariation,OrderItem,Order, Variation
+
+from .forms import CouponForm
+from .models import Coupon, Item, ItemVariation,OrderItem,Order, Variation
 from django.utils import timezone
 class HomeView(ListView):
     model = Item
     paginate_by = 10
     template_name = "home.html"
+
+
 
 
 class ItemDetailsView(DetailView):
@@ -121,13 +122,51 @@ class OrderSummaryVIew(LoginRequiredMixin,View):
             order = Order.objects.get(user=self.request.user,ordered=False)
             if order.items.count() < 1:
                 return redirect("core:homepage")
-            context = {"object":order}
+            context = {"object":order,"couponform":CouponForm}
         except ObjectDoesNotExist:
             return redirect("core:homepage")
 
         return render(self.request,"order-summary.html",context)
-
+        
     model = Order 
     template_name = "order_summary.html"
 
+def check_coupon(request,code):
+    try:
+        coupon = Coupon.objects.get(code=code)
+        return True
+    except ObjectDoesNotExist:
+        return False
     
+def getCoupon(request,code):
+    try: 
+        coupon = Coupon.objects.get(code=code)
+        return coupon
+    except ObjectDoesNotExist:
+        return redirect("core:order-summary")
+class AddCouponView(View):
+    def post(self,*args, **kwargs):
+        if self.request.method == "POST":
+            form = CouponForm(self.request.POST or None)
+            if form.is_valid():
+                try:
+                    code = form.cleaned_data.get("code")
+                    if check_coupon(self.request,code):
+                        print("check don")
+                        order = Order.objects.get(user=self.request.user,ordered=False)
+                        order.coupon = getCoupon(self.request,code)
+                        order.save()
+                        return redirect("core:order-summary")
+                    else: 
+                        # if invalid code
+                        return redirect("core:order-summary")
+                except ObjectDoesNotExist:
+                    # invalid cart order
+                    return redirect("core:order-summary")
+class RemoveCouponView(View):
+    def get(self,*args, **kwargs):          
+        order = Order.objects.get(user=self.request.user,ordered=False)
+        order.coupon = None
+        order.save()
+        return redirect("core:order-summary")
+                    

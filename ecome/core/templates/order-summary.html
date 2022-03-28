@@ -3,8 +3,8 @@
 
 {% block content %}
 
-    <div class="container">
-        <div class="row">
+    <div class="container-fluid g-5">
+        <div class="row mt-5 ">
             <div class="col-8">
                 {% for order_item in object.items.all  %}
                     <div class="media d-md-flex shadow p-2 d-block mt-3">
@@ -21,13 +21,13 @@
                            </span>
                         <span class="d-block my-2">
                             {% if order_item.item.discount_price %}
-                                <p class="text-dark h5 fw-bold d-inline">Rs. {{order_item.item.discount_price}}</p>
-                                <p class="text-muted h5 fw-normal d-inline"><del>Rs. {{order_item.item.price}}</del></p>
+                                <p class="text-dark h5 fw-bold d-inline">₹{{order_item.get_total_discount_price}}</p>
+                                <p class="text-muted h5 fw-normal d-inline"><del>₹{{order_item.get_total_price}}</del></p>
+                                <p class="text-success fw-bold">Total Saved: ₹{{order_item.get_saved_amount}} ({{order_item.total_discount_precentage_price}}%)</p>
                             {% else %}
-                                <p class="text-muted h5 fw-normal d-inline">Rs. {{order_item.item.price}}</p>
+                                <p class="text-muted h5 fw-normal d-inline">₹{{order_item.item.price}}</p>
                             {% endif %}
                         </span>
-
                         <span class="d-block my-2">
                             <a href="{% url 'core:minus-from-cart' order_item.item.slug %}" class=" btn btn-danger fw-bolder">-</a>
                             <span class="">{{order_item.qty}}</span>
@@ -42,7 +42,50 @@
                     </div>
                 {% endfor %}
             </div>
-            <div class="col-4"></div>
+            <div class="col-4">
+                <h3 class=" display-6">Price Breakpoint</h3>
+                <div class=" list-group">
+                    <div class="list-group-item list-group-item-action">
+                        <span class="fw-bold">Total Amount</span>
+                        <span class="float-end">₹{{object.get_total}}</span>
+                    </div>
+                    <div class="list-group-item list-group-item-action">
+                        <span class="fw-bold">Tax GST(18%)</span>
+                        <span class="float-end">₹{{object.get_total_tax}}</span>
+                    </div>
+                  {% if object.get_total_discount_amount > 0.0 %}
+                  <div class="list-group-item list-group-item-action bg-success text-white">
+                    <span class="fw-bold">Total Discount</span>
+                    <span class="float-end">₹{{object.get_total_discount_amount}}</span>
+                </div>
+                {% endif %}
+                
+                  {% if object.coupon %}
+                  <div class="list-group-item list-group-item-action bg-warning text-white">
+                    <span class="fw-bold">Coupon Discount</span>
+                    <span class="float-end">₹{{object.coupon.amount}}</span>
+                </div>
+                  {% endif %}
+                    <div class="list-group-item list-group-item-action display-6">
+                        <span class="fw-bold">Total Payable</span>
+                        <span class="float-end small">₹{{object.get_payable_amount}}</span>
+                    </div>
+                </div>
+
+                {% if object.coupon %}
+                    <h2 class="h6 text-center mt-2">{{object.coupon.code}} already Applied <a href="{% url 'core:remove-coupon' %}" class="h6">Remove</a></h2>
+                {% else %}
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <form action="{% url 'core:add-coupon' %}" method="post" class="d-flex">
+                            {% csrf_token %}
+                            {{couponform.code}}
+                            <input type="submit" class="btn btn-success" value="Go">
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 
