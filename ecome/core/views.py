@@ -4,7 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView,DetailView,View
 
-from .forms import CouponForm
+from .forms import CouponForm, CheckoutForm
 from .models import Coupon, Item, ItemVariation,OrderItem,Order, Variation
 from django.utils import timezone
 class HomeView(ListView):
@@ -169,4 +169,31 @@ class RemoveCouponView(View):
         order.coupon = None
         order.save()
         return redirect("core:order-summary")
-                    
+
+class CheckOutView(View):
+
+    def get(self,*args, **kwargs):
+        try:
+            order = Order.objects.get(user=self.request.user,ordered=False)
+            form  = CheckoutForm()
+            return render(self.request,"checkout.html",{"order":order,"forms":form})
+        
+        except ObjectDoesNotExist:
+            return redirect("core:checkout")
+    
+    
+    def post(self, *args, **kwargs):
+        if self.request.method=="POST":
+            order = Order.objects.get(user=self.request.user,ordered=False)
+            form= CheckoutForm(self.request.POST or None)
+            if form.is_valid():
+                data = form.save(commit=False)
+                data.user = self.request.user
+                data.save()
+                order.address = data
+                order.save()
+                return redirect("core:checkout")
+            else:
+                return redirect("core:checkout")
+        else:
+            return redirect("core:checkout")
