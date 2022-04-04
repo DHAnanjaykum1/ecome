@@ -6,23 +6,46 @@
     <div class="container">
         <h2>Checkout Form</h2>
 
-
         <div class="row">
+            <div class="col-6">
+              <div class="row">
+                  <div class="col-12">
+                   <form action="{% url 'core:save_Address_Action' %}" method="post">
+                       {% csrf_token %}
+                       {% for add  in  address %}
+                       <div class="mb-3">
+                           <input type="radio" class="btn-check" name="save_address" value={{add.id}} id="add{{forloop.counter}}" autocomplete="off">
+                           <label class="btn btn-outline-secondary w-100" for="add{{forloop.counter}}">
+                               <h6>{{add.name}} - {{add.contact}}</h6>
+                               <p class="m-0">{{add.locality}} {{add.get_city_display}} {{add.get_state_display}}</p>
+                               <p class="m-0">pincode:{{add.pincode}}</p>
+                           </label>
+                         </div>
+                         {% endfor %}
+                         <div class="mb-3">
+                             <input type="submit" name="save_address_btn" class="btn btn-success" value="Payment">
+                         </div>
+                   </form>
+                    
+                  </div>
+              </div>
+            </div>
             <div class="col-6">
                 <div class="card">
                     <div class="card-body">
                         <form action="" method="post">
-                            {% csrf_token %}
-                           {{forms|crispy}}
 
+                            {% csrf_token %}
+                            {{forms|crispy}}
+                               
                            <div class="mb-3">
-                               <input type="submit" class="btn btn-success">
+                               <input type="submit" class="btn btn-success float-end" value="Save Address & Payment">
                            </div>
-                        </form>
                     </div>
                 </div>
             </div>
         </div>
+    </form>
 
     </div>
 

@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView,DetailView,View
 
 from .forms import CouponForm, CheckoutForm
-from .models import Coupon, Item, ItemVariation,OrderItem,Order, Variation
+from .models import Address, Coupon, Item, ItemVariation,OrderItem,Order, Variation
 from django.utils import timezone
 class HomeView(ListView):
     model = Item
@@ -176,7 +176,8 @@ class CheckOutView(View):
         try:
             order = Order.objects.get(user=self.request.user,ordered=False)
             form  = CheckoutForm()
-            return render(self.request,"checkout.html",{"order":order,"forms":form})
+            address = Address.objects.filter(user=self.request.user)
+            return render(self.request,"checkout.html",{"order":order,"forms":form,"address":address})
         
         except ObjectDoesNotExist:
             return redirect("core:checkout")
@@ -197,3 +198,13 @@ class CheckOutView(View):
                 return redirect("core:checkout")
         else:
             return redirect("core:checkout")
+
+def save_Address_Action(r):
+    if r.method == "POST":
+        order = Order.objects.get(user=r.user,ordered=False)
+        save_address = r.POST.get("save_address",None)
+        selected_address = Address.objects.get(id=save_address)
+        order.address = selected_address
+        order.save()
+
+
