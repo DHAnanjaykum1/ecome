@@ -73,7 +73,7 @@
                 </div>
 
                 {% if object.coupon %}
-                    <h2 class="h6 text-center mt-2">{{object.coupon.code}} already Applied <a href="{% url 'core:remove-coupon' %}" class="h6">Remove</a></h2>
+                    <h2 class="h6 text-center mt-2">{{object.coupon.code}} already Applied <a href="{% url 'core:remove-coupon' %}" class="btn btn-info">Remove</a></h2>
                 {% else %}
                 <div class="card mt-3">
                     <div class="card-body">

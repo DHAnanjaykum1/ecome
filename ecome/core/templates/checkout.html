@@ -13,7 +13,7 @@
                    <form action="{% url 'core:save_Address_Action' %}" method="post">
                        {% csrf_token %}
                        {% for add  in  address %}
-                       <div class="mb-3">
+                       <div class="mb-3 bg-light">
                            <input type="radio" class="btn-check" name="save_address" value={{add.id}} id="add{{forloop.counter}}" autocomplete="off">
                            <label class="btn btn-outline-secondary w-100" for="add{{forloop.counter}}">
                                <h6>{{add.name}} - {{add.contact}}</h6>
@@ -31,7 +31,7 @@
               </div>
             </div>
             <div class="col-6">
-                <div class="card">
+                <div class="card bg-light">
                     <div class="card-body">
                         <form action="" method="post">
 

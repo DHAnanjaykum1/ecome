@@ -1,3 +1,5 @@
+import random
+import string 
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.core.exceptions import ObjectDoesNotExist
@@ -5,7 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView,DetailView,View
 
 from .forms import CouponForm, CheckoutForm
-from .models import Address, Coupon, Item, ItemVariation,OrderItem,Order, Variation
+from .models import Address, Coupon, Item, ItemVariation,OrderItem,Order, Payment, Variation
 from django.utils import timezone
 class HomeView(ListView):
     model = Item
@@ -193,6 +195,7 @@ class CheckOutView(View):
                 data.save()
                 order.address = data
                 order.save()
+                makePayment(self.request)
                 return redirect("core:checkout")
             else:
                 return redirect("core:checkout")
@@ -206,5 +209,31 @@ def save_Address_Action(r):
         selected_address = Address.objects.get(id=save_address)
         order.address = selected_address
         order.save()
+        makePayment(r)
+        return redirect("core:myOrder")
 
+
+def create_ref_code():
+    return "".join(random.choices(string.ascii_lowercase + string.digits, k=20))
+
+def makePayment(r):
+    order = Order.objects.get(user=r.user,ordered=False)
+    payment = Payment()
+    payment.txt_id = "332334252423"
+    payment.user = r.user
+    payment.amount = order.get_payable_amount()
+    payment.save()
+#  assign payment to order
+    order_item = order.items.all()
+    order_item.update(ordered=True)
+    order.ordered = True
+    order.payment = payment 
+    order.ref_code = create_ref_code()
+    order.save()
+    return redirect("core:myOrder")
+
+
+def myOrder(r):
+    order = Order.objects.filter(user=r.user,ordered=True)
+    return render(r,"myorder.html",{"order":order})
 
